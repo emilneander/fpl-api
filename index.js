@@ -4,6 +4,7 @@ const {
   collectCurrentSquad,
   collectPointsToCurrentSquad,
   collectRankChange,
+  collectFixtures,
 } = require("./script/collectData");
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -30,7 +31,6 @@ app.get("/current-squad/:manager/", async (req, res) => {
         .then((data) => {
           [currentSquad, currentRank] = data;
         })
-
         .then(async () => {
           await collectPointsToCurrentSquad(currentEventId, currentSquad)
             .then((data) => {
@@ -54,5 +54,18 @@ app.get("/current-squad/:manager/", async (req, res) => {
               });
             });
         });
+    });
+});
+app.get("/current-fixtures/", async (req, res) => {
+  let teams, allPlayers, currentEventId, deadline;
+  await collectGeneralInfo()
+    .then((data) => {
+      [teams, allPlayers, currentEventId, deadline] = data;
+    })
+    .then(async () => {
+      await collectFixtures(currentEventId, teams).then((data) => {
+        const fixtures = data;
+        res.status(200).send(fixtures);
+      });
     });
 });

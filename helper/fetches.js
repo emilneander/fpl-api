@@ -37,3 +37,12 @@ module.exports.fetchHistoryTeam = async (managerId) => {
     console.error(error);
   }
 };
+module.exports.fetchFixtures = async (eventId) => {
+  try {
+    return await axios.get(
+      `https://fantasy.premierleague.com/api/fixtures?event=${eventId}`
+    );
+  } catch (error) {
+    console.error(error);
+  }
+};

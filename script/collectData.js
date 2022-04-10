@@ -3,6 +3,7 @@ const {
   fetchCurrentTeam,
   fetchLiveEvent,
   fetchHistoryTeam,
+  fetchFixtures,
 } = require("../helper/fetches");
 
 module.exports.collectGeneralInfo = async () => {
@@ -11,7 +12,7 @@ module.exports.collectGeneralInfo = async () => {
     const data = res.data;
     const currentEventId = data.events.find((e) => e.is_current)?.id ?? 0;
     const teams = data.teams.map((t) => {
-      return { id: t.id, name: t.name };
+      return { id: t.id, name: t.name, short_name: t.short_name };
     });
     const deadline =
       data.events.find((e) => e.is_next).deadline_time_epoch ?? 0;
@@ -94,5 +95,24 @@ module.exports.collectRankChange = async (
     const previousRank = data.entry_history.overall_rank;
     const rankChange = previousRank - currentRank;
     return rankChange;
+  });
+};
+module.exports.collectFixtures = async (eventId, teams) => {
+  return await fetchFixtures(eventId).then((res) => {
+    if (res.status !== 200) return;
+    resdata = res.data;
+    const fixtures = resdata.map((data) => {
+      return {
+        homeTeam: teams.find((t) => t.id === data.team_h).short_name,
+        homeScore: data.team_h_score,
+        awayTeam: teams.find((t) => t.id === data.team_a).short_name,
+        awayScore: data.team_a_score,
+        kickoffTime: Date.parse(data.kickoff_time),
+        isStarted: data.started,
+        isFinshed: data.finished,
+        minutes: data.minutes,
+      };
+    });
+    return fixtures;
   });
 };
