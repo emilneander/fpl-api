@@ -2,6 +2,7 @@ const {
   fetchGeneralInfo,
   fetchCurrentTeam,
   fetchLiveEvent,
+  fetchHistoryTeam,
 } = require("../helper/fetches");
 
 module.exports.collectGeneralInfo = async () => {
@@ -49,7 +50,7 @@ module.exports.collectCurrentSquad = async (managerId, eventId, allPlayers) => {
         type: pData.type.plural_name_short,
       };
     });
-    return players;
+    return [players, data.entry_history.overall_rank];
   });
 };
 module.exports.collectPointsToCurrentSquad = async (eventId, currentSquad) => {
@@ -80,5 +81,18 @@ module.exports.collectPointsToCurrentSquad = async (eventId, currentSquad) => {
     });
     currentSquad["total_points"] = sum;
     return currentSquad;
+  });
+};
+module.exports.collectRankChange = async (
+  managerId,
+  currentWeek,
+  currentRank
+) => {
+  return await fetchCurrentTeam(managerId, currentWeek - 1).then((res) => {
+    if (res.status !== 200) return;
+    const data = res.data;
+    const previousRank = data.entry_history.overall_rank;
+    const rankChange = previousRank - currentRank;
+    return rankChange;
   });
 };
